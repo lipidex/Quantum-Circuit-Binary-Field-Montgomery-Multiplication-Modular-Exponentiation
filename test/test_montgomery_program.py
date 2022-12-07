@@ -35,15 +35,10 @@ class MontgomeryTestCase(CircuitTestCase):
                 adder.LOGGER.addHandler(handler)
 
     @parameterized.expand([
-        ('101', '001', '001'),
-        ('101', '010', '001'),
-        ('101', '001', '011'),
-        ('101', '100', '001'),
-        ('101', '010', '010'),
-        ('011', '011', '010'),
-        ('101', '010', '100'),
-        ('101', '001', '011'),
-        ('101', '011', '010')
+        ('101', '01', '01'),
+        ('101', '10', '01'),
+        ('111', '11', '10'),
+        ('111', '10', '10'),
     ])
     def test_montgomery(self, N_bin, A_bin, B_bin):
         """
@@ -102,15 +97,10 @@ class MontgomeryTestCase(CircuitTestCase):
 
 
     @parameterized.expand([
-        ('101', '001', '001'),
-        ('101', '010', '001'),
-        ('101', '001', '011'),
-        ('101', '100', '001'),
-        ('101', '010', '010'),
-        ('011', '011', '010'),
-        ('101', '010', '100'),
-        ('101', '001', '011'),
-        ('101', '011', '010')
+        ('101', '01', '01'),
+        ('101', '10', '01'),
+        ('111', '11', '10'),
+        ('111', '10', '10'),
     ])
     def test_montgomery_fixed(self, N_bin, A_bin, B_bin):
         """
@@ -153,8 +143,7 @@ class MontgomeryTestCase(CircuitTestCase):
             self.assertEqual(counts, 1)
 
             self.logger.debug("state res %s", res[0].state)
-            print(res[0].state)
-
+            
             expected = montgomery_expected_result(bits, N_bin, A_bin, B_bin)
 
             self.logger.debug("expected res %s", expected)
