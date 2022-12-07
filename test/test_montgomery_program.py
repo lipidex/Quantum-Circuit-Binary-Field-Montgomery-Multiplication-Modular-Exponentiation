@@ -39,6 +39,7 @@ class MontgomeryTestCase(CircuitTestCase):
         ('101', '10', '01'),
         ('111', '11', '10'),
         ('111', '10', '10'),
+        ('111', '10', '11'),
     ])
     def test_montgomery(self, N_bin, A_bin, B_bin):
         """
@@ -84,6 +85,7 @@ class MontgomeryTestCase(CircuitTestCase):
             self.assertEqual(counts, 1)
 
             self.logger.debug("state res %s", res[0].state)
+            print(res[0].state)
 
             expected = montgomery_expected_result(bits, N_bin, A_bin, B_bin)
 
@@ -95,12 +97,12 @@ class MontgomeryTestCase(CircuitTestCase):
             self.logger.debug("obtained res %s", obtained_result)
             self.assertEqual(obtained_result, expected)
 
-
     @parameterized.expand([
         ('101', '01', '01'),
         ('101', '10', '01'),
         ('111', '11', '10'),
         ('111', '10', '10'),
+        ('111', '10', '11'),
     ])
     def test_montgomery_fixed(self, N_bin, A_bin, B_bin):
         """
@@ -143,7 +145,8 @@ class MontgomeryTestCase(CircuitTestCase):
             self.assertEqual(counts, 1)
 
             self.logger.debug("state res %s", res[0].state)
-            
+            print(res[0].state)
+
             expected = montgomery_expected_result(bits, N_bin, A_bin, B_bin)
 
             self.logger.debug("expected res %s", expected)
