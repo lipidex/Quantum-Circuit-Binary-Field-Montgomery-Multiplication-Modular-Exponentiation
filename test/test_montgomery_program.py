@@ -6,6 +6,7 @@ from parameterized import parameterized
 from qat.external.utils.bits import misc
 from qat.external.utils.qroutines import montgomery_mul
 from qat.external.utils.qroutines import qregs_init as qregs
+from qat.external.qpus.reversible import RProgram
 from qat.lang.AQASM import Program
 
 
@@ -40,6 +41,7 @@ class MontgomeryTestCase(CircuitTestCase):
         ('111', '11', '10'),
         ('111', '10', '10'),
         ('111', '10', '11'),
+        ('1101', '101', '110'),
     ])
     def test_montgomery(self, N_bin, A_bin, B_bin):
         """
@@ -74,27 +76,36 @@ class MontgomeryTestCase(CircuitTestCase):
             self.logger.debug("anc indices % s", [qbit.index for qbit in self.anc])
             self.logger.debug("to measure qubits %s", [qbit.index for qbit in to_measure_qbits])
 
-            res_bits = self.qc.calloc(len(to_measure_qbits))
-            self.qc.measure(to_measure_qbits, res_bits)
+            if self.REVERSIBLE_ON:
+                rpr = RProgram.circuit_to_rprogram(self.qc.to_circ())
+                res = rpr.rbits.to01()
+                self.logger.debug("reversible res %s", res)
 
-            res = self.qpu.submit(
-                self.qc.to_circ().to_job())
-            self.logger.debug("res %s", res)
+                self.logger.debug("state res %s", res)
+                
+                obtained_result = "".join([res[i] for i in [qbit.index for qbit in to_measure_qbits]])[::-1]
+                self.logger.debug("obtained res %s", obtained_result)
+            else:
+                res_bits = self.qc.calloc(len(to_measure_qbits))
+                self.qc.measure(to_measure_qbits, res_bits)
 
-            counts = len(res)
-            self.assertEqual(counts, 1)
+                res = self.qpu.submit(
+                    self.qc.to_circ().to_job())
+                self.logger.debug("normal res %s", res)
 
-            self.logger.debug("state res %s", res[0].state)
-            print(res[0].state)
+                counts = len(res)
+                self.assertEqual(counts, 1)
+                self.logger.debug("state res %s", res[0].state)
+
+                _res_bits = res[0].intermediate_measurements[-1].cbits
+                self.logger.debug("res bits %s", _res_bits)
+
+                obtained_result = "".join(list(map(lambda x: '1' if x else '0', _res_bits[::-1])))
+                self.logger.debug("obtained res %s", obtained_result)
 
             expected = montgomery_expected_result(bits, N_bin, A_bin, B_bin)
-
             self.logger.debug("expected res %s", expected)
 
-            _res_bits = res[0].intermediate_measurements[-1].cbits
-            obtained_result = "".join(list(map(lambda x: '1' if x else '0', _res_bits[::-1]))) 
-            
-            self.logger.debug("obtained res %s", obtained_result)
             self.assertEqual(obtained_result, expected)
 
     @parameterized.expand([
@@ -103,6 +114,7 @@ class MontgomeryTestCase(CircuitTestCase):
         ('111', '11', '10'),
         ('111', '10', '10'),
         ('111', '10', '11'),
+        ('1101', '101', '110'),
     ])
     def test_montgomery_fixed(self, N_bin, A_bin, B_bin):
         """
@@ -134,25 +146,34 @@ class MontgomeryTestCase(CircuitTestCase):
             self.logger.debug("anc indices % s", [qbit.index for qbit in self.anc])
             self.logger.debug("to measure qubits %s", [qbit.index for qbit in to_measure_qbits])
 
-            res_bits = self.qc.calloc(len(to_measure_qbits))
-            self.qc.measure(to_measure_qbits, res_bits)
+            if self.REVERSIBLE_ON:
+                rpr = RProgram.circuit_to_rprogram(self.qc.to_circ())
+                res = rpr.rbits.to01()
+                self.logger.debug("reversible res %s", res)
 
-            res = self.qpu.submit(
-                self.qc.to_circ().to_job())
-            self.logger.debug("res %s", res)
+                self.logger.debug("state res %s", res)
+                
+                obtained_result = "".join([res[i] for i in [qbit.index for qbit in to_measure_qbits]])[::-1]
+                self.logger.debug("obtained res %s", obtained_result)
+            else:
+                res_bits = self.qc.calloc(len(to_measure_qbits))
+                self.qc.measure(to_measure_qbits, res_bits)
 
-            counts = len(res)
-            self.assertEqual(counts, 1)
+                res = self.qpu.submit(
+                    self.qc.to_circ().to_job())
+                self.logger.debug("normal res %s", res)
 
-            self.logger.debug("state res %s", res[0].state)
-            print(res[0].state)
+                counts = len(res)
+                self.assertEqual(counts, 1)
+                self.logger.debug("state res %s", res[0].state)
+
+                _res_bits = res[0].intermediate_measurements[-1].cbits
+                self.logger.debug("res bits %s", _res_bits)
+
+                obtained_result = "".join(list(map(lambda x: '1' if x else '0', _res_bits[::-1])))
+                self.logger.debug("obtained res %s", obtained_result)
 
             expected = montgomery_expected_result(bits, N_bin, A_bin, B_bin)
-
             self.logger.debug("expected res %s", expected)
 
-            _res_bits = res[0].intermediate_measurements[-1].cbits
-            obtained_result = "".join(list(map(lambda x: '1' if x else '0', _res_bits[::-1]))) 
-            
-            self.logger.debug("obtained res %s", obtained_result)
             self.assertEqual(obtained_result, expected)
